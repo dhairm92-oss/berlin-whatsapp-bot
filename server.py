@@ -34,7 +34,7 @@ def webhook():
             # تم تحديث النموذج إلى gemini-3.6-flash بناءً على طلب جوجل
             client = genai.Client(api_key=GEMINI_API_KEY)
             response = client.models.generate_content(
-                model="gemini-3.6-flash",
+                model="gemini-1.5-flash",
                 contents=body,
             )
             
