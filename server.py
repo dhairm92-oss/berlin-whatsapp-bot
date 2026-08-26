@@ -10,15 +10,9 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
-# استخدام موديل متوافق ومستقر
-generation_config = {
-    "temperature": 0.7,
-    "max_output_tokens": 800,
-}
-model = genai.GenerativeModel(model_name="gemini-1.5-pro", generation_config=generation_config)
+# استخدام موديل مستقر ومضمون
+model = genai.GenerativeModel('gemini-pro')
 
-ULTRAMSG_TOKEN = os.environ.get("ULTRAMSG_TOKEN")
-# ملاحظة: استبدل instanceXXXXXX برقم الـ Instance الخاص بك إذا لزم الأمر، أو خذه من متغير بيئة
 INSTANCE_ID = "instance189651" 
 
 @app.route("/", methods=["GET"])
@@ -38,7 +32,6 @@ def webhook():
     try:
         message_data = data.get("data", {})
         
-        # تجنب الرد على رسائل البوت نفسه
         if message_data.get("fromMe", False):
             return "OK", 200
 
@@ -51,12 +44,11 @@ def webhook():
         print(f"Processing message from {sender}: {text}")
 
         # توليد الرد من جيميني
-        chat = model.start_chat(history=[])
-        response = chat.send_message(text)
+        response = model.generate_content(text)
         reply_text = response.text
         print(f"Gemini reply: {reply_text}")
 
-        # إرسال الرد عبر UltraMsg باستخدام التوكن الصحيح من الـ Environment
+        # إرسال الرد عبر UltraMsg باستخدام التوكن من الـ Environment
         token = os.environ.get("ULTRAMSG_TOKEN")
         url = f"https://api.ultramsg.com/{INSTANCE_ID}/messages/chat"
         payload = {
