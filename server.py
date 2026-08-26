@@ -31,12 +31,11 @@ def webhook():
 
             print(f"Processing message from {sender}: {body}")
 
-            # تهيئة العميل بالمكتبة الحديثة الرسمية
             client = genai.Client(api_key=GEMINI_API_KEY)
             
-            # استخدام الطريقة السريعة والمستقرة للرد المباشر
+            # استخدام النموذج العام المضمون
             response = client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-flash",
                 contents=body,
             )
             
