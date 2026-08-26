@@ -1,13 +1,17 @@
 import os
 import requests
 from flask import Flask, request
-from google import genai
+import google.generativeai as genai
 
 app = Flask(__name__)
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 CLIENT_TOKEN = "d67zooznsqok1ia"
 INSTANCE_ID = "instance189651"
+
+# تهيئة المفتاح بالطريقة الكلاسيكية المستقرة
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 
 @app.route("/", methods=["GET"])
@@ -31,12 +35,9 @@ def webhook():
 
             print(f"Processing message from {sender}: {body}")
 
-            # استخدام الطريقة الموصى بها رسمياً عبر الـ Chat لتفادي خطأ الـ AFC
-            client = genai.Client(api_key=GEMINI_API_KEY)
-            chat = client.chats.create(model="gemini-2.5-flash")
-            response = chat.send_message(body)
-            
-            reply_text = response.text if hasattr(response, 'text') else str(response)
+            # توليد الرد بالطريقة المباشرة والمضمونة
+            response = model.generate_content(body)
+            reply_text = response.text
             print(f"Gemini reply: {reply_text}")
 
             url = f"https://api.ultramsg.com/{INSTANCE_ID}/messages/chat"
