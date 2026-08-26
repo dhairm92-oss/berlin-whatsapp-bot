@@ -17,15 +17,10 @@ def home():
 
 @app.route("/webhook", methods=["POST", "GET"])
 def webhook():
-    # طباعة عامة للتأكد أن الرابط استقبل أي طلب (سواء POST أو GET)
     print("--- WEBHOOK HIT ---")
-    print("Method:", request.method)
-    print("Headers:", dict(request.headers))
     
     try:
         data = request.json
-        print("Received JSON data:", data)
-        
         if data and "data" in data:
             message_data = data["data"]
             sender = message_data.get("from")
@@ -36,12 +31,15 @@ def webhook():
 
             print(f"Processing message from {sender}: {body}")
 
+            # استدعاء Gemini بالطريقة القياسية الآمنة
             client = genai.Client(api_key=GEMINI_API_KEY)
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=body,
             )
-            reply_text = response.text
+            
+            # استخراج النص بضمان تام
+            reply_text = response.text if hasattr(response, 'text') else str(response)
             print(f"Gemini reply: {reply_text}")
 
             url = f"https://api.ultramsg.com/{INSTANCE_ID}/messages/chat"
@@ -53,7 +51,7 @@ def webhook():
             }
             headers = {"content-type": "application/x-www-form-urlencoded"}
             
-            api_response = requests.post(url, data, headers=headers)
+            api_response = requests.post(url, data=payload, headers=headers)
             print("UltraMsg Response:", api_response.text)
 
     except Exception as e:
