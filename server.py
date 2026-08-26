@@ -31,14 +31,13 @@ def webhook():
 
             print(f"Processing message from {sender}: {body}")
 
-            # استدعاء Gemini بالطريقة القياسية الآمنة
+            # تم تحديث النموذج إلى gemini-3.6-flash بناءً على طلب جوجل
             client = genai.Client(api_key=GEMINI_API_KEY)
             response = client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-3.6-flash",
                 contents=body,
             )
             
-            # استخراج النص بضمان تام
             reply_text = response.text if hasattr(response, 'text') else str(response)
             print(f"Gemini reply: {reply_text}")
 
