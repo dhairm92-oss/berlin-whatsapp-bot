@@ -1,7 +1,6 @@
 import os
 import requests
 from flask import Flask, request
-from google import genai
 
 app = Flask(__name__)
 
@@ -31,17 +30,29 @@ def webhook():
 
             print(f"Processing message from {sender}: {body}")
 
-            client = genai.Client(api_key=GEMINI_API_KEY)
+            # الاتصال المباشر برتست API الخاص بجوجل لتجاوز جميع مشاكل المكتبات
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
             
-            # استخدام النموذج الأحدث الذي تطلبه جوجل صراحةً
-            response = client.models.generate_content(
-                model="gemini-3.6-flash",
-                contents=body,
-            )
+            gemini_payload = {
+                "contents": [{
+                    "parts": [{"text": body}]
+                }]
+            }
             
-            reply_text = response.text if hasattr(response, 'text') else str(response)
+            gemini_res = requests.post(gemini_url, json=gemini_payload)
+            gemini_data = gemini_res.json()
+            
+            print("Gemini API Raw Response:", gemini_data)
+
+            # استخراج الرد بدقة تامة
+            try:
+                reply_text = gemini_data["candidates"][0]["content"]["parts"][0]["text"]
+            except Exception:
+                reply_text = "أهلاً بك، وصلتني رسالتك ولكن حدث خطأ بسيط في معالجة الرد."
+
             print(f"Gemini reply: {reply_text}")
 
+            # إرسال الرد عبر UltraMsg للواتساب
             url = f"https://api.ultramsg.com/{INSTANCE_ID}/messages/chat"
             payload = {
                 "token": CLIENT_TOKEN,
