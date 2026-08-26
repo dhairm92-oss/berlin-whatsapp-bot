@@ -31,13 +31,10 @@ def webhook():
 
             print(f"Processing message from {sender}: {body}")
 
+            # استخدام الطريقة الموصى بها رسمياً عبر الـ Chat لتفادي خطأ الـ AFC
             client = genai.Client(api_key=GEMINI_API_KEY)
-            
-            # استخدام الطريقة القياسية المعتمدة للرد
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=body,
-            )
+            chat = client.chats.create(model="gemini-2.5-flash")
+            response = chat.send_message(body)
             
             reply_text = response.text if hasattr(response, 'text') else str(response)
             print(f"Gemini reply: {reply_text}")
